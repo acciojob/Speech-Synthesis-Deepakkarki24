@@ -2,42 +2,91 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Speech Synthesis</title>
-  <link href='https://fonts.googleapis.com/css?family=Pacifico' rel='stylesheet' type='text/css'>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text to Speech Application</title>
 </head>
 <body>
+  <h1>Text to Speech Application</h1>
 
-    <div class="voiceinator">
+  <label for="text">Enter Text:</label>
+  <textarea id="text" rows="4" cols="50"></textarea>
 
-      <h1>The Voiceinator 5000</h1>
+  <br />
 
-      <select name="voice" id="voices">
-        <option value="">Select A Voice</option>
-      </select>
+  <label for="voices">Choose Voice:</label>
+  <select id="voices"></select>
 
-      <label for="rate">Rate:</label>
-      <input name="rate" type="range" min="0" max="3" value="1" step="0.1">
+  <br />
 
-      <label for="pitch">Pitch:</label>
+  <label for="rate">Rate:</label>
+  <input type="range" id="rate" min="0.5" max="2" value="1" step="0.1">
+  <span id="rate-value">1</span>
 
-      <input name="pitch" type="range" min="0" max="2" step="0.1">
-      <textarea name="text">Hello! I love JavaScript 👍</textarea>
-      <button id="stop">Stop!</button>
-      <button id="speak">Speak</button>
+  <br />
 
-    </div>
+  <label for="pitch">Pitch:</label>
+  <input type="range" id="pitch" min="0" max="2" value="1" step="0.1">
+  <span id="pitch-value">1</span>
 
-<script>
-  const msg = new SpeechSynthesisUtterance();
-  let voices = [];
-  const voicesDropdown = document.querySelector('[name="voice"]');
-  const options = document.querySelectorAll('[type="range"], [name="text"]');
-  const speakButton = document.querySelector('#speak');
-  const stopButton = document.querySelector('#stop');
+  <br />
 
-  //Your code goes here
-</script>
+  <button id="start">Start</button>
+  <button id="stop">Stop</button>
 
+  <script>
+    // Text to Speech Application
+    const textArea = document.getElementById('text');
+    const voicesDropdown = document.getElementById('voices');
+    const rateSlider = document.getElementById('rate');
+    const pitchSlider = document.getElementById('pitch');
+    const rateValue = document.getElementById('rate-value');
+    const pitchValue = document.getElementById('pitch-value');
+    const startButton = document.getElementById('start');
+    const stopButton = document.getElementById('stop');
+
+    let voices = [];
+    const synth = window.speechSynthesis;
+    let utterance = new SpeechSynthesisUtterance();
+
+    // Load available voices
+    function populateVoices() {
+      voices = synth.getVoices();
+      voicesDropdown.innerHTML = voices
+        .map((voice, index) => `<option value="${index}">${voice.name} (${voice.lang})</option>`)
+        .join('');
+    }
+
+    // Update voices on load and on voiceschanged event
+    synth.onvoiceschanged = populateVoices;
+
+    // Set rate and pitch values
+    rateSlider.addEventListener('input', () => {
+      rateValue.textContent = rateSlider.value;
+      utterance.rate = parseFloat(rateSlider.value);
+    });
+
+    pitchSlider.addEventListener('input', () => {
+      pitchValue.textContent = pitchSlider.value;
+      utterance.pitch = parseFloat(pitchSlider.value);
+    });
+
+    // Start speaking
+    startButton.addEventListener('click', () => {
+      utterance.text = textArea.value;
+      const selectedVoiceIndex = parseInt(voicesDropdown.value);
+      if (!isNaN(selectedVoiceIndex)) {
+        utterance.voice = voices[selectedVoiceIndex];
+      }
+      synth.speak(utterance);
+    });
+
+    // Stop speaking
+    stopButton.addEventListener('click', () => {
+      synth.cancel();
+    });
+
+    // Initialize the app
+    populateVoices();
+  </script>
 </body>
 </html>
